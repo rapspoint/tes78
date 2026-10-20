@@ -1,0 +1,694 @@
+
+
+/* FONT and BASE STYLES */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* THEME COLOR VARIABLES - Default Sharp Dark Theme */
+:root {
+    --bg-color: #0d0d0d;
+    /* Latar belakang gelap pekat */
+    --card-bg-color: #1a1a1a;
+    /* Card gelap */
+    --input-bg-color: #262626;
+    /* Input gelap */
+    --accent-color: #64b5f6;
+    /* Aksen biru terang */
+    --primary-color: #4db6ac;
+    /* Biru muda terang */
+    --primary-hover-color: #43a047;
+    /* Hijau saat hover */
+    --text-color: #f5f5f5;
+    /* Teks terang */
+    --text-white: #ffffff;
+    /* Teks putih */
+    --text-muted-color: #a0a0a0;
+    /* Teks redup */
+    --text-light-muted-color: #c0c0c0;
+    /* Teks redup terang */
+    --border-color: #404040;
+    /* Border gelap */
+    --border-alt-color: #2a2a2a;
+    --error-color: #e57373;
+    /* Warna error merah muda */
+    --btn-secondary-bg-hover: #64b5f6;
+    /* Hover tombol sekunder */
+    --btn-secondary-text-hover: #000000;
+    --btn-icon-1-bg: #4db6ac;
+    /* Ikon aksi 1 */
+    --btn-icon-1-bg-hover: #43a047;
+    --btn-icon-2-bg: #64b5f6;
+    /* Ikon aksi 2 */
+    --btn-icon-2-bg-hover: #1e88e5;
+    --btn-icon-3-bg: #81c784;
+    /* Ikon aksi 3 */
+    --btn-icon-3-bg-hover: #66bb6a;
+    --btn-icon-4-bg: #4fc3f7;
+    /* Ikon aksi 4 */
+    --btn-icon-4-bg-hover: #29b6f6;
+    --placeholder-bg-1: #333333;
+    /* Placeholder 1 */
+    --placeholder-bg-2: #262626;
+    /* Placeholder 2 */
+    --checkerboard-color: #333333;
+    /* Checkerboard */
+    --header-icon-color: #4db6ac;
+    /* Ikon header */
+    --modal-text-bg: #262626;
+    /* Latar teks modal - slightly darker than input */
+}
+
+
+/* --- THEME OVERRIDES --- */
+/* Themes now only override accent colors, keeping background and text consistent. */
+
+/* --- 1. Deep Space --- */
+[data-theme="deep-space"] {
+    --accent-color: #7e57c2;
+    --primary-color: #ab47bc;
+    --primary-hover-color: #8e24aa;
+    --header-icon-color: #ab47bc;
+    --btn-secondary-bg-hover: #ab47bc;
+    --btn-icon-1-bg: #ab47bc;
+    --btn-icon-1-bg-hover: #8e24aa;
+    --btn-icon-2-bg: #7e57c2;
+    --btn-icon-2-bg-hover: #5e35b1;
+    --btn-icon-3-bg: #26c6da;
+    --btn-icon-3-bg-hover: #00b0ff;
+    --btn-icon-4-bg: #ff7043;
+    --btn-icon-4-bg-hover: #ff5722;
+}
+
+/* --- 2. Cyberpunk Neon --- */
+[data-theme="cyberpunk-neon"] {
+    --accent-color: #00ff88;
+    --primary-color: #ff0080;
+    --primary-hover-color: #cc0066;
+    --header-icon-color: #ff0080;
+    --btn-secondary-bg-hover: #00ff88;
+    --btn-secondary-text-hover: #0f0f0f;
+    --btn-icon-1-bg: #ff0080;
+    --btn-icon-1-bg-hover: #cc0066;
+    --btn-icon-2-bg: #00ff88;
+    --btn-icon-2-bg-hover: #00cc6a;
+    --btn-icon-3-bg: #8800ff;
+    --btn-icon-3-bg-hover: #6a00cc;
+    --btn-icon-4-bg: #0088ff;
+    --btn-icon-4-bg-hover: #006acc;
+}
+
+/* --- 3. Terminal Green --- */
+[data-theme="terminal-green"] {
+    --accent-color: #55ff55;
+    --primary-color: #00cc00;
+    --primary-hover-color: #00aa00;
+    --header-icon-color: #55ff55;
+    --btn-secondary-bg-hover: #55ff55;
+    --btn-secondary-text-hover: #000000;
+    --btn-icon-1-bg: #00cc00;
+    --btn-icon-1-bg-hover: #00aa00;
+    --btn-icon-2-bg: #55ff55;
+    --btn-icon-2-bg-hover: #33cc33;
+    --btn-icon-3-bg: #00aa88;
+    --btn-icon-3-bg-hover: #008866;
+    --btn-icon-4-bg: #0088aa;
+    --btn-icon-4-bg-hover: #006688;
+}
+
+/* --- 4. Obsidian --- */
+[data-theme="obsidian"] {
+    --accent-color: #b0bec5;
+    --primary-color: #5c6bc0;
+    --primary-hover-color: #3949ab;
+    --header-icon-color: #5c6bc0;
+    --btn-secondary-bg-hover: #5c6bc0;
+    --btn-secondary-text-hover: #0a0a0a;
+    --btn-icon-1-bg: #5c6bc0;
+    --btn-icon-1-bg-hover: #3949ab;
+    --btn-icon-2-bg: #b0bec5;
+    --btn-icon-2-bg-hover: #90a4ae;
+    --btn-icon-3-bg: #80cbc4;
+    --btn-icon-3-bg-hover: #4db6ac;
+    --btn-icon-4-bg: #ffab91;
+    --btn-icon-4-bg-hover: #ff8a65;
+}
+
+/* --- 5. Matrix --- */
+[data-theme="matrix"] {
+    --accent-color: #00ff00;
+    --primary-color: #00cc00;
+    --primary-hover-color: #00aa00;
+    --header-icon-color: #00ff00;
+    --btn-secondary-bg-hover: #00ff00;
+    --btn-secondary-text-hover: #000000;
+    --btn-icon-1-bg: #00cc00;
+    --btn-icon-1-bg-hover: #00aa00;
+    --btn-icon-2-bg: #00ff00;
+    --btn-icon-2-bg-hover: #00cc00;
+    --btn-icon-3-bg: #008800;
+    --btn-icon-3-bg-hover: #006600;
+    --btn-icon-4-bg: #004400;
+    --btn-icon-4-bg-hover: #002200;
+}
+
+/* --- 6. Steel Blue --- */
+[data-theme="steel-blue"] {
+    --accent-color: #778da9;
+    --primary-color: #415a77;
+    --primary-hover-color: #3a506b;
+    --header-icon-color: #415a77;
+    --btn-secondary-bg-hover: #415a77;
+    --btn-secondary-text-hover: #e0e1dd;
+    --btn-icon-1-bg: #415a77;
+    --btn-icon-1-bg-hover: #3a506b;
+    --btn-icon-2-bg: #778da9;
+    --btn-icon-2-bg-hover: #5a6e8a;
+    --btn-icon-3-bg: #4ecdc4;
+    --btn-icon-3-bg-hover: #26a69a;
+    --btn-icon-4-bg: #ff9f1c;
+    --btn-icon-4-bg-hover: #ff8f00;
+}
+
+/* --- 7. Crimson Dark --- */
+[data-theme="crimson-dark"] {
+    --accent-color: #f44336;
+    --primary-color: #e91e63;
+    --primary-hover-color: #c2185b;
+    --header-icon-color: #e91e63;
+    --btn-secondary-bg-hover: #e91e63;
+    --btn-secondary-text-hover: #0c0c0c;
+    --btn-icon-1-bg: #e91e63;
+    --btn-icon-1-bg-hover: #c2185b;
+    --btn-icon-2-bg: #f44336;
+    --btn-icon-2-bg-hover: #d32f2f;
+    --btn-icon-3-bg: #9c27b0;
+    --btn-icon-3-bg-hover: #7b1fa2;
+    --btn-icon-4-bg: #ff9800;
+    --btn-icon-4-bg-hover: #f57c00;
+}
+
+/* --- 8. Arctic Frost --- */
+[data-theme="arctic-frost"] {
+    --accent-color: #64ffda;
+    --primary-color: #64ffda;
+    --primary-hover-color: #4fe0bb;
+    --header-icon-color: #64ffda;
+    --btn-secondary-bg-hover: #64ffda;
+    --btn-secondary-text-hover: #0a192f;
+    --btn-icon-1-bg: #64ffda;
+    --btn-icon-1-bg-hover: #4fe0bb;
+    --btn-icon-2-bg: #64ffda;
+    --btn-icon-2-bg-hover: #2ed8b6;
+    --btn-icon-3-bg: #00aaff;
+    --btn-icon-3-bg-hover: #0088cc;
+    --btn-icon-4-bg: #ff66c4;
+    --btn-icon-4-bg-hover: #cc1076;
+}
+
+/* --- 9. Desert Night --- */
+[data-theme="desert-night"] {
+    --accent-color: #d4af37;
+    --primary-color: #ff8c00;
+    --primary-hover-color: #e65100;
+    --header-icon-color: #d4af37;
+    --btn-secondary-bg-hover: #d4af37;
+    --btn-secondary-text-hover: #1c1c1c;
+    --btn-icon-1-bg: #ff8c00;
+    --btn-icon-1-bg-hover: #e65100;
+    --btn-icon-2-bg: #d4af37;
+    --btn-icon-2-bg-hover: #b8860b;
+    --btn-icon-3-bg: #556b2f;
+    --btn-icon-3-bg-hover: #3e501f;
+    --btn-icon-4-bg: #4682b4;
+    --btn-icon-4-bg-hover: #32678a;
+}
+
+/* --- 10. Solar Flare --- */
+[data-theme="solar-flare"] {
+    --accent-color: #ff4500;
+    --primary-color: #ff8c00;
+    --primary-hover-color: #ff7700;
+    --header-icon-color: #ff8c00;
+    --btn-secondary-bg-hover: #ff8c00;
+    --btn-secondary-text-hover: #000000;
+    --btn-icon-1-bg: #ff8c00;
+    --btn-icon-1-bg-hover: #ff7700;
+    --btn-icon-2-bg: #ff4500;
+    --btn-icon-2-bg-hover: #e03d00;
+    --btn-icon-3-bg: #ffd700;
+    --btn-icon-3-bg-hover: #e6c200;
+    --btn-icon-4-bg: #ff1493;
+    --btn-icon-4-bg-hover: #cc1076;
+}
+
+/* COMPONENT STYLES */
+.card {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--btn-secondary-text-hover);
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.btn-primary:disabled {
+    background-color: color-mix(in srgb, var(--card-bg-color) 80%, #888888);
+    color: var(--text-muted-color);
+    border: 1px solid var(--text-muted-color);
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--btn-secondary-bg-hover);
+    color: var(--btn-secondary-text-hover);
+    border-color: var(--btn-secondary-bg-hover);
+}
+
+.btn-secondary:disabled {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--text-muted-color);
+    color: var(--text-muted-color);
+    cursor: not-allowed;
+}
+
+.input-field,
+select {
+    background-color: var(--input-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.input-field::placeholder {
+    color: var(--text-muted-color);
+}
+
+.loader {
+    border: 3px solid color-mix(in srgb, var(--primary-color) 50%, transparent);
+    border-left-color: var(--text-color);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.b-roll-card .loader,
+.result-card .loader {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.file-input-label {
+    cursor: pointer;
+    border: 2px dashed var(--border-color);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.file-input-label:hover {
+    border-color: var(--primary-color);
+    background-color: color-mix(in srgb, var(--card-bg-color) 50%, transparent);
+}
+
+.b-roll-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.b-roll-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+.b-roll-card .placeholder-title {
+    background-color: color-mix(in srgb, var(--card-bg-color) 50%, var(--bg-color));
+}
+
+.b-roll-card .placeholder-img {
+    background-color: color-mix(in srgb, var(--card-bg-color) 20%, var(--bg-color));
+}
+
+/* Tab Styles */
+.tab-nav {
+    border-bottom: 1px solid var(--border-alt-color);
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    color: var(--text-light-muted-color);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    cursor: pointer;
+}
+
+.tab-btn:hover {
+    color: var(--text-color);
+}
+
+.tab-btn.active {
+    color: var(--text-color);
+    border-bottom-color: var(--accent-color);
+}
+
+/* Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 110;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background-color: var(--card-bg-color);
+    padding: 2rem;
+    border-radius: 0.75rem;
+    width: 90%;
+    max-width: 500px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    border: 1px solid var(--accent-color);
+}
+
+#modal-text-content {
+    background-color: var(--modal-text-bg);
+}
+
+/* Theme Grid Styles */
+.theme-grid-container {
+    opacity: 0; /* Start hidden for transition */
+    pointer-events: none; /* Do not capture clicks when hidden */
+    transition: opacity 0.3s ease; /* Smooth transition */
+}
+
+/* When the 'hidden' class is present (default state or explicitly hidden by JS) */
+.theme-grid-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* When the 'hidden' class is NOT present (explicitly shown by JS) */
+.theme-grid-container:not(.hidden) { 
+    opacity: 1; /* Make visible */
+    pointer-events: auto; /* Capture clicks when visible */
+}
+
+.theme-grid-item {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    transition: background-color 0.3s, border-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-grid-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--primary-color) 40%, transparent);
+}
+
+
+/* MISC & OVERRIDES */
+h1.text-white,
+h2.text-white,
+h3.text-white,
+#modal-title.text-white {
+    color: var(--text-color);
+}
+
+.header-icon {
+    color: var(--header-icon-color);
+}
+
+.text-error {
+    color: var(--error-color);
+}
+
+.text-light-muted-color {
+    color: var(--text-light-muted-color);
+}
+
+.text-muted-color {
+    color: var(--text-muted-color);
+}
+
+.footer {
+    border-top: 1px solid var(--border-alt-color);
+}
+
+/* Corrected classes and added centering/shadow for action buttons */
+.btn-icon-action-1,
+.btn-icon-action-2,
+.btn-icon-action-3, /* Corrected class name */
+.btn-icon-action-4 { /* Corrected class name */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Added shadow for visibility */
+}
+
+.btn-icon-action-1 {
+    background-color: var(--btn-icon-1-bg);
+}
+
+.btn-icon-action-1:hover {
+    background-color: var(--btn-icon-1-bg-hover);
+}
+
+.btn-icon-action-2 {
+    background-color: var(--btn-icon-2-bg);
+}
+
+.btn-icon-action-2:hover {
+    background-color: var(--btn-icon-2-bg-hover);
+}
+
+/* Corrected class names for btn-icon-3 and btn-icon-4 */
+.btn-icon-action-3 {
+    background-color: var(--btn-icon-3-bg);
+}
+
+.btn-icon-action-3:hover {
+    background-color: var(--btn-icon-3-bg-hover);
+}
+
+.btn-icon-action-4 {
+    background-color: var(--btn-icon-4-bg);
+}
+
+.btn-icon-action-4:hover {
+    background-color: var(--btn-icon-4-bg-hover);
+}
+
+.checkerboard-bg {
+    background-image: repeating-conic-gradient(var(--checkerboard-color) 0% 25%, transparent 0% 50%);
+    background-size: 20px 20px;
+}
+
+.bg-body-bg {
+    background-color: var(--bg-color);
+}
+
+/* Custom range input for progress bar */
+#progress-bar {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+}
+
+#progress-bar::-webkit-slider-runnable-track {
+    background: var(--border-color);
+    border-radius: 9999px;
+    height: 4px;
+}
+
+#progress-bar::-moz-range-track {
+    background: var(--border-color);
+    border-radius: 9999px;
+    height: 4px;
+}
+
+#progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -6px; /* Adjust to center vertically */
+    background-color: var(--primary-color);
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    border: 0;
+    transition: background-color 0.2s;
+}
+
+#progress-bar::-moz-range-thumb {
+    background-color: var(--primary-color);
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    border: 0;
+    transition: background-color 0.2s;
+}
+
+#progress-bar:focus {
+    outline: none;
+}
+
+.disabled-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none; /* Crucial for preventing clicks */
+}
+
+/* NEW: General purpose styled close button */
+.btn-close-styled {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.btn-close-styled:hover {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+
+/* NEW: Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    width: 4rem; /* w-16 */
+    height: 2.25rem; /* h-9 */
+    background-color: color-mix(in srgb, var(--primary-color) 30%, var(--input-bg-color));
+    border-radius: 9999px;
+    transition: background-color 0.3s ease;
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 0.25rem; /* top-1 */
+    left: 0.25rem; /* left-1 */
+    width: 1.75rem; /* w-7 */
+    height: 1.75rem; /* h-7 */
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+/* peer is the checkbox input */
+.peer:checked + .toggle-switch {
+    background-color: var(--primary-color);
+}
+.peer:checked + .toggle-switch::after {
+    transform: translateX(1.75rem); /* 4rem - 1.75rem (handle) - 0.25rem (left offset) = 2rem. Let's recalculate. width is 4rem (64px). Handle is 1.75rem(28px). Left is 0.25rem (4px). So it should move from 4px to 64-28-4=32px. That is a 28px translation, which is 1.75rem */
+}
+
+/* NEW: Image Checkbox Styles */
+.image-container.checked::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 3px solid var(--primary-color);
+    border-radius: 0.375rem; /* Corresponds to rounded-md */
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+.image-checkbox {
+    background-color: rgba(13, 13, 13, 0.6); /* --bg-color with opacity */
+    border: 2px solid var(--text-white);
+}
+
+.image-checkbox.checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* NEW: Image Upload Toggle Buttons */
+.image-upload-toggle-btn {
+    color: var(--text-light-muted-color);
+    background-color: transparent;
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
+.image-upload-toggle-btn:hover:not(.active) {
+    color: var(--text-white);
+    background-color: color-mix(in srgb, var(--primary-color) 20%, transparent);
+}
+
+.image-upload-toggle-btn.active {
+    background-color: var(--primary-color);
+    color: var(--btn-secondary-text-hover); /* Use high-contrast text color from theme */
+    box-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 50%, transparent);
+}
+
+/* NEW: Processing overlay for input panel */
+.processing-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(13, 13, 13, 0.6);
+    border-radius: 0.75rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}

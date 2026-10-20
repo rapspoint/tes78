@@ -1,0 +1,8 @@
+{
+  "name": " 10/09/2026 Fashionity🔍 V1.1.0",
+  "description": "Platform pembuatan konten visual AI untuk affiliate tanpa harus ada sampel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

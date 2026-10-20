@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashionity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <link rel="stylesheet" href="index.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0"
+      }
+    }
+    </script>
+    <!-- Cropper.js JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="password-modal" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[100]">
+        <div class="card p-8 rounded-lg shadow-lg text-center w-full max-w-sm">
+            <h2 class="text-2xl font-bold text-white mb-4">🔆 Selamat Datang 🔆</h2>
+            <p class="text-light-muted-color mb-6">Masukkan kode akses Anda untuk mulai.</p>
+            <input type="password" id="password-input" class="w-full p-3 input-field rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition mb-4 text-center" placeholder="********">
+            <button id="password-submit-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg">Masuk</button>
+            <p id="password-error" class="text-error mt-4 h-5"></p>
+            <button id="terms-btn" class="mt-6 text-sm text-light-muted-color hover:text-white hover:underline transition-colors duration-200">Syarat & Ketentuan</button>
+        </div>
+    </div>
+
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="modal-backdrop z-[120]">
+        <div class="modal-content !max-w-4xl !w-11/12 !p-0 overflow-hidden flex flex-col h-[90vh]">
+            <div class="p-4 border-b border-border-color flex justify-between items-center bg-card-bg-color">
+                <h3 class="text-xl font-bold text-white">Sesuaikan Gambar (9:16)</h3>
+                <button id="close-crop-modal-btn" class="btn-close-styled w-7 h-7">
+                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+            </div>
+            <div class="flex-grow relative bg-black flex items-center justify-center overflow-hidden">
+                 <div class="h-full w-full p-4">
+                    <img id="crop-image" src="" alt="Image to crop" class="max-w-full max-h-full block">
+                 </div>
+            </div>
+            <div class="p-4 border-t border-border-color flex justify-between items-center bg-card-bg-color gap-3">
+                <p class="text-sm text-light-muted-color hidden sm:block">Geser dan perbesar area yang diinginkan.</p>
+                <div class="flex gap-3">
+                    <button id="cancel-crop-btn" class="btn-secondary font-bold py-2 px-4 rounded-lg">Batal</button>
+                    <button id="confirm-crop-btn" class="btn-primary font-bold py-2 px-4 rounded-lg">Potong & Gunakan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Image Preview Modal -->
+    <div id="full-image-modal" class="fixed inset-0 z-[150] bg-black bg-opacity-95 hidden flex flex-col transition-opacity duration-300">
+        <!-- Header / Toolbar -->
+        <div class="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+            <button id="close-full-image-btn" class="text-white p-2 rounded-full bg-black/50 hover:bg-white/20 transition backdrop-blur-sm group flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span class="text-sm font-medium pr-2">Kembali</span>
+            </button>
+            <div class="text-white/70 text-sm pointer-events-none">
+                Scroll untuk Zoom • Drag untuk Geser
+            </div>
+        </div>
+
+        <!-- Image Container -->
+        <div class="flex-grow flex items-center justify-center overflow-hidden w-full h-full relative cursor-grab active:cursor-grabbing" id="full-image-container">
+            <img id="full-image-preview" src="" class="max-w-full max-h-full object-contain transition-transform duration-100 ease-linear origin-center" alt="Full Preview" style="transform: scale(1) translate(0px, 0px);">
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <div class="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+             <div class="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 z-20">
+                <div class="relative flex items-center gap-2">
+                    <!-- Tombol untuk membuka panduan -->
+                    <button id="help-btn" class="card p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500" aria-label="Bantuan">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 header-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                    <!-- Tombol untuk membuka grid tema -->
+                    <button id="theme-switcher-btn" class="card p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500" aria-label="Pilih Tema">
+                        <!-- New Color Palette Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 header-icon" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 16H8a1 1 0 01-1-1v-2c0-.552.448-1 1-1h3c.552 0 1 .448 1 1v2c0 .552-.448 1-1 1zm-1-6a1 1 0 00-1 1v2a1 1 0 001 1h3a1 1 0 001-1v-2a1 1 0 00-1-1H8zM16 13h-3a1 1 0 00-1 1v2c0 .552.448 1 1 1h3a1 1 0 001-1v-2c0-.552-.448-1-1-1zm-1-6a1 1 0 00-1 1v2a1 1 0 001 1h3a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Container untuk Grid Tema Kustom -->
+            <div id="theme-grid-container" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="card p-6 rounded-lg shadow-lg w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-white">Pilih Tema</h3>
+                        <button id="close-theme-grid-btn" class="btn-close-styled w-7 h-7">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        </button>
+                    </div>
+                    <div id="theme-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <!-- Item tema akan dimasukkan di sini oleh JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <header class="text-center mb-6">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white flex items-center justify-center">
+                    Fashionity <span class="header-icon text-3xl ml-2">🔍</span>
+                </h1>
+            </header>
+
+            <!-- Tab Navigation -->
+            <nav class="mb-8 tab-nav">
+                <div class="flex flex-wrap -mb-px items-center" role="tablist" aria-label="Fitur AI">
+                    <button role="tab" aria-selected="true" id="tab-win-generating" data-panel="pose-generator-panel" class="tab-btn active">Batch Generator</button>
+                    <button role="tab" aria-selected="false" id="tab-video-generator" data-panel="video-generator-panel" class="tab-btn">Generator Video</button>
+                    <button role="tab" aria-selected="false" id="tab-analyze-screenshot" data-panel="analyze-screenshot-panel" class="tab-btn">Analisa Gambar</button>
+                    <button role="tab" aria-selected="false" id="tab-voiceover-manual" data-panel="voiceover-manual-panel" class="tab-btn">Voice Over</button>
+                    
+                    <div class="flex-grow"></div> <!-- Pushes the next item to the right -->
+            
+                    <div class="relative" id="other-tools-dropdown-container">
+                        <button id="other-tools-btn" class="tab-btn flex items-center gap-1">
+                            <span>Other Tools</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div id="other-tools-menu" class="hidden absolute right-0 mt-2 w-48 card p-2 rounded-lg shadow-lg z-10">
+                            <button role="tab" aria-selected="false" id="tab-try-on" data-panel="try-on-panel" class="tab-btn !border-b-0 w-full text-left p-3 hover:bg-input-bg-color rounded-md">Pakaikan</button>
+                            <button role="tab" aria-selected="false" id="tab-remove-bg" data-panel="remove-bg-panel" class="tab-btn !border-b-0 w-full text-left p-3 hover:bg-input-bg-color rounded-md">Remove Background</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Tab Content Panels -->
+            <div id="tab-panels">
+
+                <!-- Batch Generator Panel -->
+                <div id="pose-generator-panel" role="tabpanel" aria-labelledby="tab-win-generating">
+                    <p class="text-lg text-light-muted-color text-center mt-3 mb-10 max-w-3xl mx-auto">Buat konten lengkap. Unggah produk dan deskripsi untuk hasilkan 6 ide visual, script, dan voice over secara otomatis.</p>
+                    <main class="flex flex-col lg:flex-row gap-8">
+                        <!-- Input Column -->
+                        <div id="pose-generator-inputs-card" class="card p-6 w-full lg:w-1/3 lg:max-w-sm flex-shrink-0 self-start relative">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-3">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="wg-ai-model-toggle" class="sr-only peer">
+                                        <div class="toggle-switch"></div>
+                                    </label>
+                                    <span id="wg-ai-model-label" class="text-sm font-semibold text-white">Mode Flash</span>
+                                </div>
+                                <button id="reset-win-generating-btn" class="btn-secondary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-base self-end">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>Bersihkan</span>
+                                </button>
+                            </div>
+                            <div class="flex flex-col gap-6">
+                                <div>
+                                    <h2 class="text-xl font-semibold text-white mb-3">1. Unggah Gambar Produk</h2>
+                                    <!-- New Toggle Buttons -->
+                                    <div class="flex mb-4 border border-border-color rounded-lg p-1" id="image-upload-toggles">
+                                        <button id="toggle-produk" class="image-upload-toggle-btn active flex-1 py-2 px-4 rounded-md text-sm font-semibold">Produk</button>
+                                        <button id="toggle-model" class="image-upload-toggle-btn flex-1 py-2 px-4 rounded-md text-sm font-semibold">Model</button>
+                                        <button id="toggle-background" class="image-upload-toggle-btn flex-1 py-2 px-4 rounded-md text-sm font-semibold">Background</button>
+                                    </div>
+                                
+                                    <!-- Upload Area Container -->
+                                    <div id="image-upload-areas-container">
+                                        <!-- Product Upload -->
+                                        <div id="produk-upload-content" class="relative">
+                                            <div id="image-upload-area" class="aspect-square">
+                                                <label for="image-input" class="file-input-label h-full rounded-lg text-center text-light-muted-color">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                    <span>Pilih Gambar Produk (Wajib)</span>
+                                                </label>
+                                                <input type="file" id="image-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                                            </div>
+                                            <div id="image-preview-container" class="hidden relative aspect-square">
+                                                <img id="image-preview" src="#" alt="Pratinjau Produk" class="rounded-lg w-full h-full object-contain">
+                                                <button id="remove-image-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7" title="Hapus Gambar Ini"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                                            </div>
+                                            
+                                            <!-- Image Navigation -->
+                                            <button id="prev-image-btn" class="absolute top-1/2 -translate-y-1/2 -left-4 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition disabled:opacity-50 disabled:cursor-not-allowed z-10 hidden">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                            </button>
+                                            <button id="next-image-btn" class="absolute top-1/2 -translate-y-1/2 -right-4 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 transition disabled:opacity-50 disabled:cursor-not-allowed z-10 hidden">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                                            </button>
+                                            <div id="image-counter-container" class="absolute bottom-2 left-0 right-0 flex justify-center items-center px-2 hidden pointer-events-none">
+                                                <span id="image-counter" class="bg-black/60 text-white text-xs px-3 py-1.5 rounded-md font-semibold pointer-events-auto">1/1</span>
+                                            </div>
+                                        </div>
+                                
+                                        <!-- Model Upload -->
+                                        <div id="model-upload-content" class="hidden">
+                                            <div id="model-image-upload-area" class="aspect-square">
+                                                <label for="model-image-input" class="file-input-label h-full !p-2 rounded-lg text-center text-light-muted-color">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                                    <span class="text-xs">Pilih Foto Model (Opsional)</span>
+                                                </label>
+                                                <input type="file" id="model-image-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                                            </div>
+                                            <div id="model-image-preview-container" class="hidden relative aspect-square">
+                                                <img id="model-image-preview" src="#" alt="Pratinjau Model" class="rounded-lg w-full h-full object-contain">
+                                                <button id="remove-model-image-btn" class="absolute top-1 right-1 btn-close-styled !w-6 !h-6"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                                            </div>
+                                        </div>
+                                
+                                        <!-- Background Upload -->
+                                        <div id="background-upload-content" class="hidden">
+                                            <div id="background-image-upload-area" class="aspect-square">
+                                                <label for="background-image-input" class="file-input-label h-full !p-2 rounded-lg text-center text-light-muted-color">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h8a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 15.707l1.414-1.414M14.879 14.293l1.414 1.414M5.5 13.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zM13.5 13.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0zM4 11V9a2 2 0 012-2h12a2 2 0 012 2v2"></path></svg>
+                                                    <span class="text-xs">Pilih Foto Background (Opsional)</span>
+                                                </label>
+                                                <input type="file" id="background-image-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                                            </div>
+                                            <div id="background-image-preview-container" class="hidden relative aspect-square">
+                                                <img id="background-image-preview" src="#" alt="Pratinjau Background" class="rounded-lg w-full h-full object-contain">
+                                                <button id="remove-background-image-btn" class="absolute top-1 right-1 btn-close-styled !w-6 !h-6"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- NEW: Image Count Dropdown -->
+                                    <div id="wg-image-count-container" class="hidden mt-4">
+                                        <label for="wg-image-count-select" class="block text-sm font-medium text-light-muted-color mb-1">Jumlah Gambar yang Dihasilkan</label>
+                                        <select id="wg-image-count-select" class="w-full p-3 input-field rounded-lg text-base">
+                                            <option value="0">0 (Hanya Teks/Audio)</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6" selected>6</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h2 class="text-xl font-semibold text-white">2. Deskripsi Produk</h2>
+                                        <button id="generate-desc-btn" class="btn-secondary text-sm font-semibold py-1 px-3 rounded-md flex items-center" disabled>
+                                            ✨ Buat Deskripsi
+                                        </button>
+                                    </div>
+                                    <div class="relative">
+                                        <textarea id="product-desc-input" rows="4" class="w-full p-3 pr-10 input-field rounded-lg" placeholder="Contoh: Sprei kasur motif bunga..."></textarea>
+                                        <button id="clear-product-desc-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7 hidden z-10" title="Hapus input">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-semibold mb-3 text-white">3. Tema Foto <span class="text-sm text-light-muted-color">(Opsional)</span></h2>
+                                    <div class="relative">
+                                        <textarea id="photo-theme-input" rows="3" class="w-full p-3 pr-10 input-field rounded-lg" placeholder="Contoh: Ruang studio minimalis, Nuansa kota malam..."></textarea>
+                                        <button id="clear-photo-theme-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7 hidden z-10" title="Hapus input">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- CHECKLIST SECTION -->
+                                <div class="border-t border-border-color pt-6">
+                                    <h2 class="text-xl font-semibold mb-3 text-white">4. Opsi Tambahan</h2>
+                                    <div class="space-y-4">
+                                        <!-- Option 1: Analyze Screenshot -->
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-grow pr-4">
+                                                <label for="wg-analyze-checkbox" class="font-medium text-white cursor-pointer">Buat Script Voice Over</label>
+                                                <p class="text-light-muted-color text-sm">Otomatis buat script dari info produk.</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                                <input type="checkbox" id="wg-analyze-checkbox" class="sr-only peer">
+                                                <div class="toggle-switch"></div>
+                                            </label>
+                                        </div>
+                                        <!-- Settings for Analyze Screenshot -->
+                                        <div id="wg-analyze-settings" class="hidden pl-8 space-y-4 border-l-2 border-border-color ml-2.5">
+                                            <div>
+                                                <label for="wg-analyze-duration-select" class="block text-sm font-medium text-light-muted-color mb-1">Durasi Voice Over (Detik)</label>
+                                                <div class="flex gap-2">
+                                                    <select id="wg-analyze-duration-select" class="w-1/2 p-3 input-field rounded-lg text-base">
+                                                        <option value="20" selected>20 (Default)</option>
+                                                        <option value="25">25</option>
+                                                        <option value="30">30</option>
+                                                    </select>
+                                                    <input type="number" id="wg-analyze-manual-duration-input" class="w-1/2 p-3 input-field rounded-lg text-base" placeholder="Manual">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label for="wg-analyze-language-select" class="block text-sm font-medium text-light-muted-color mb-1">Bahasa Output</label>
+                                                <select id="wg-analyze-language-select" class="w-full p-3 input-field rounded-lg text-base">
+                                                    <option value="indonesian" selected>Indonesia</option>
+                                                    <option value="malay">Melayu</option>
+                                                    <option value="thai">Thailand</option>
+                                                    <option value="vietnamese">Vietnam</option>
+                                                    <option value="hindi">India</option>
+                                                    <option value="english">English</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="wg-analyze-voice-theme-input" class="block text-sm font-medium text-light-muted-color mb-1">Tema Suara <span class="text-xs">(Opsional)</span></label>
+                                                <textarea id="wg-analyze-voice-theme-input" rows="3" class="w-full p-3 input-field rounded-lg" placeholder="Contoh: Lucu dan ceria, formal dan informatif..."></textarea>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Option 2: Voiceover Manual -->
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-grow pr-4">
+                                                <label for="wg-voiceover-checkbox" class="font-medium text-white cursor-pointer has-tooltip" data-tooltip="Aktifkan 'Buat Script Voice Over' terlebih dahulu">Buat Voice Over</label>
+                                                <p class="text-light-muted-color text-sm">Buat audio dari script dengan suara AI pilihan.</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                                <input type="checkbox" id="wg-voiceover-checkbox" class="sr-only peer" disabled>
+                                                <div class="toggle-switch"></div>
+                                            </label>
+                                        </div>
+                                        <p id="wg-voiceover-dependency-error" class="text-error text-xs -mt-2 ml-1 hidden">Aktifkan 'Buat Script Voice Over' dahulu.</p>
+                                        <!-- Settings for Voiceover Manual -->
+                                        <div id="wg-voiceover-settings" class="hidden pl-8 border-l-2 border-border-color ml-2.5">
+                                            <label for="wg-voiceover-model-select" class="block text-sm font-medium text-light-muted-color mb-1">Pilih Model Suara AI</label>
+                                            <select id="wg-voiceover-model-select" class="w-full p-3 input-field rounded-lg text-base">
+                                                <optgroup label="Suara Wanita">
+                                                    <option value="achernar">Achernar - Terang, Jelas</option>
+                                                    <option value="aoede">Aoede - Lembut, Melodis</option>
+                                                    <option value="autonoe">Autonoe - Santai, Alami</option>
+                                                    <option value="callirrhoe">Callirrhoe - Bersemangat, Muda</option>
+                                                    <option value="despina" selected>Despina - Ceria, Ringan</option>
+                                                    <option value="erinome">Erinome - Dalam, Penuh Perasaan</option>
+                                                    <option value="gacrux">Gacrux - Hangat, Ramah</option>
+                                                    <option value="kore">Kore - Jelas, Tenang</option>
+                                                    <option value="laomedeia">Laomedeia - Ceria, Optimis</option>
+                                                    <option value="leda">Leda - Halus, Menenangkan</option>
+                                                    <option value="pulcherrima">Pulcherrima - Elegan, Halus</option>
+                                                    <option value="sulafat">Sulafat - Ramah, Bersahabat</option>
+                                                    <option value="vindemiatrix">Vindemiatrix - Enerjik, Tegas</option>
+                                                    <option value="zephyr">Zephyr - Ringan, Ceria</option>
+                                                </optgroup>
+                                                <optgroup label="Suara Pria">
+                                                    <option value="achird">Achird - Ramah, Hangat</option>
+                                                    <option value="algenib">Algenib - Profesional, Jelas</option>
+                                                    <option value="algieba">Algieba - Dewasa, Tenang</option>
+                                                    <option value="alnilam">Alnilam - Dalam, Resonan</option>
+                                                    <option value="charon">Charon - Dalam, Berat</option>
+                                                    <option value="enceladus">Enceladus - Profesional, Meyakinkan</option>
+                                                    <option value="fenrir">Fenrir - Kuat, Tegas</option>
+                                                    <option value="iapetus">Iapetus - Tua, Bijaksana</option>
+                                                    <option value="orus">Orus - Berwibawa, Kuat</option>
+                                                    <option value="puck">Puck - Muda, Enerjik</option>
+                                                    <option value="rasalgethi">Rasalgethi - Dalam, Serius</option>
+                                                    <option value="sadachbia">Sadachbia - Santai, Alami</option>
+                                                    <option value="sadaltager">Sadaltager - Jelas, Informatif</option>
+                                                    <option value="schedar">Schedar - Jelas, Berwibawa</option>
+                                                    <option value="umbriel">Umbriel - Serius, Formal</option>
+                                                    <option value="zubenelgenubi">Zubenelgenubi - Unik, Khas</option>
+                                                </optgroup>
+                                            </select>
+                                             <div class="mt-4">
+                                                <label for="wg-voiceover-style-select" class="block text-sm font-medium text-light-muted-color mb-1">Gaya Bicara</label>
+                                                <select id="wg-voiceover-style-select" class="w-full p-3 input-field rounded-lg text-base">
+                                                    <option value="natural" selected>🗣️ Natural</option>
+                                                    <option value="sat_set">⚡️ Sat Set (Cepat)</option>
+                                                    <option value="shouting_promo">📢 Teriak Jualan (Lantang, Cepat & Sat Set)</option>
+                                                    <option value="energetic">⚡️ Energetik</option>
+                                                    <option value="cheerful">😄 Ceria</option>
+                                                    <option value="calm">😌 Tenang</option>
+                                                    <option value="authoritative">👑 Berwibawa</option>
+                                                    <option value="friendly">👋 Ramah</option>
+                                                    <option value="promotional">📢 Promosi</option>
+                                                    <option value="formal">👔 Formal</option>
+                                                    <option value="whispering">🤫 Bisikan</option>
+                                                    <option value="sad">😢 Sedih</option>
+                                                </select>
+                                                <p id="wg-voiceover-style-desc" class="text-xs text-light-muted-color mt-1.5 min-h-[1.25rem]"></p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Option 3: Caption -->
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-grow pr-4">
+                                                <label for="wg-caption-checkbox" class="font-medium text-white cursor-pointer">Buat Caption Media Sosial</label>
+                                                <p class="text-light-muted-color text-sm">Otomatis buat caption untuk setiap gambar.</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                                <input type="checkbox" id="wg-caption-checkbox" class="sr-only peer">
+                                                <div class="toggle-switch"></div>
+                                            </label>
+                                        </div>
+
+                                        <!-- Option 4: Generate Video Prompts -->
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-grow pr-4">
+                                                <label for="wg-video-prompt-checkbox" class="font-medium text-white cursor-pointer">Buat Prompt Video</label>
+                                                <p class="text-light-muted-color text-sm">Otomatis buat prompt video untuk setiap gambar.</p>
+                                            </div>
+                                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                                <input type="checkbox" id="wg-video-prompt-checkbox" class="sr-only peer">
+                                                <div class="toggle-switch"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button id="generate-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg" disabled>
+                                    <span>Hasilkan Konten</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Output Grid -->
+                        <div class="flex-grow">
+                             <!-- NEW: Text and Audio Output Container -->
+                            <div id="win-generating-text-audio-output" class="hidden card p-6 mb-6">
+                                <div class="space-y-6">
+                                    <!-- Script Output -->
+                                    <div id="wg-script-output-container" class="hidden">
+                                        <h3 class="text-lg font-semibold text-white mb-2">Hasil Script Voice Over</h3>
+                                        <div id="wg-script-output" class="result-card min-h-[100px] bg-modal-text-bg p-3 rounded-lg text-sm text-light-muted-color whitespace-pre-wrap"></div>
+                                    </div>
+                                    <!-- Audio Player -->
+                                    <div id="wg-audio-player-container" class="hidden">
+                                        <h3 class="text-lg font-semibold text-white mb-2">Hasil Voice Over</h3>
+                                        <div class="result-card bg-modal-text-bg p-4 rounded-lg flex items-center justify-center text-center">
+                                            <!-- Player will be inserted here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                             <!-- BATCH ACTION BUTTONS -->
+                            <div id="batch-actions-container" class="hidden card p-3 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <p id="batch-selection-count" class="text-white font-semibold">0 gambar dipilih</p>
+                                <div class="flex gap-3">
+                                    <button id="batch-download-btn" class="btn-secondary font-bold py-2 px-4 rounded-lg flex items-center justify-center text-base" disabled>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                        <span>Unduh Gambar</span>
+                                    </button>
+                                    <button id="batch-video-btn" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center justify-center text-base" disabled>
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.832l3-2a1 1 0 000-1.664l-3-2z" /></svg>
+                                        <span>Jadikan Video</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="b-roll-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                            </div>
+                            
+                            <!-- Image History Section -->
+                            <div class="image-history-section mt-12 hidden">
+                                <h3 class="text-xl font-semibold text-white mb-4">Histori Gambar Anda</h3>
+                                <div class="image-history-grid grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    <!-- History items will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+
+                <!-- Pakaikan (Try On) Panel -->
+                <div id="try-on-panel" role="tabpanel" aria-labelledby="tab-try-on" class="hidden">
+                    <p class="text-center text-light-muted-color mb-8 max-w-3xl mx-auto">Visualisasikan produk pada model. Gabungkan gambar model dan produk untuk melihat hasilnya secara virtual.</p>
+                    <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        <!-- Inputs -->
+                        <div class="card p-6">
+                            <h2 class="text-xl font-semibold mb-3 text-white">1. Unggah Foto Model</h2>
+                            <div id="try-on-model-upload-area" class="h-[300px] md:h-[300px]">
+                                <label for="try-on-model-input" class="file-input-label h-full rounded-lg text-center text-light-muted-color">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    <span>Pilih Foto Model</span>
+                                </label>
+                                <input type="file" id="try-on-model-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                            </div>
+                            <div id="try-on-model-preview-container" class="hidden mt-4 relative h-[300px] md:h-[300px]">
+                                <img id="try-on-model-preview" src="#" alt="Pratinjau Model" class="rounded-lg w-full h-full object-contain">
+                                <button id="try-on-remove-model-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                            </div>
+                        </div>
+                        <div class="card p-6">
+                            <h2 class="text-xl font-semibold mb-3 text-white">2. Unggah Gambar Produk</h2>
+                            <div id="try-on-product-upload-area" class="h-[300px] md:h-[300px]">
+                                <label for="try-on-product-input" class="file-input-label h-full rounded-lg text-center text-light-muted-color">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2V4zM5 12a2 2 0 012-2h6a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2z"/></svg>
+                                    <span>Pilih Gambar Produk</span>
+                                </label>
+                                <input type="file" id="try-on-product-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                            </div>
+                            <div id="try-on-product-preview-container" class="hidden mt-4 relative h-[300px] md:h-[300px]">
+                                <img id="try-on-product-preview" src="#" alt="Pratinjau Produk" class="rounded-lg w-full h-full object-contain">
+                                <button id="try-on-remove-product-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                            </div>
+                        </div>
+                        <!-- Result -->
+                        <div class="card p-6 lg:col-span-1 md:col-span-2">
+                            <h2 class="text-xl font-semibold mb-3 text-white">Hasil</h2>
+                            <div id="try-on-result-container" class="result-card aspect-square bg-body-bg rounded-lg flex items-center justify-center text-muted-color">
+                                <span>Hasil Anda akan muncul di sini</span>
+                            </div>
+                            <button id="try-on-btn" class="mt-4 w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg" disabled>Pakaikan</button>
+                        </div>
+                    </main>
+                    <div class="max-w-6xl mx-auto image-history-section mt-12 hidden">
+                        <h3 class="text-xl font-semibold text-white mb-4">Histori Gambar Anda</h3>
+                        <div class="image-history-grid grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <!-- History items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remove Background Panel -->
+                <div id="remove-bg-panel" role="tabpanel" aria-labelledby="tab-remove-bg" class="hidden">
+                    <p class="text-center text-light-muted-color mb-8 max-w-3xl mx-auto">Hapus latar belakang dengan mudah. Unggah gambar untuk mendapatkan hasil transparan secara instan.</p>
+                    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <!-- Input -->
+                        <div class="card p-6">
+                            <h2 class="text-xl font-semibold mb-3 text-white">1. Unggah Gambar</h2>
+                            <div id="remove-bg-upload-area" class="h-[300px] md:h-[300px]">
+                                <label for="remove-bg-input" class="file-input-label h-full rounded-lg text-center text-light-muted-color">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <span>Pilih Gambar</span>
+                                </label>
+                                <input type="file" id="remove-bg-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                            </div>
+                            <div id="remove-bg-preview-container" class="hidden mt-4 relative h-[300px] md:h-[300px]">
+                                <img id="remove-bg-preview" src="#" alt="Pratinjau" class="rounded-lg w-full h-full object-contain">
+                                <button id="remove-bg-remove-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                            </div>
+                            <button id="remove-bg-btn" class="mt-4 w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg" disabled>Hapus Background</button>
+                        </div>
+                        <!-- Result -->
+                        <div class="card p-6">
+                            <h2 class="text-xl font-semibold mb-3 text-white">Hasil</h2>
+                            <div id="remove-bg-result-container" class="result-card aspect-square checkerboard-bg rounded-lg flex items-center justify-center text-muted-color">
+                               <span>Hasil Anda akan muncul di sini</span>
+                            </div>
+                        </div>
+                    </main>
+                    <div class="max-w-4xl mx-auto image-history-section mt-12 hidden">
+                        <h3 class="text-xl font-semibold text-white mb-4">Histori Gambar Anda</h3>
+                        <div class="image-history-grid grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            <!-- History items will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Generator Panel -->
+                <div id="video-generator-panel" role="tabpanel" aria-labelledby="tab-video-generator" class="hidden">
+                    <p class="text-center text-light-muted-color mb-8 max-w-3xl mx-auto">Generator video multi-slot. Buat hingga 5 video sekaligus dengan prompt dan gambar referensi.</p>
+                    <div class="card p-4 mb-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                             <div>
+                                <label for="video-model-select" class="block text-sm font-medium text-light-muted-color mb-1">Model Video</label>
+                                <select id="video-model-select" class="w-full p-3 input-field rounded-lg">
+                                    <option value="veo-3.1-lite-generate-preview" selected>Veo 3.1 Lite (1080p, Harus API Key Berbayar)</option>
+                                    <option value="veo-3.1-generate-preview">Veo 3.1 Pro (720p/1080p, Harus API Key Berbayar)</option>
+                                </select>
+                            </div>
+                            <div>
+                               <label for="video-aspect-ratio-select" class="block text-sm font-medium text-light-muted-color mb-1">Rasio Aspek</label>
+                                <select id="video-aspect-ratio-select" class="w-full p-3 input-field rounded-lg">
+                                    <option value="16:9">16:9 (Landscape)</option>
+                                    <option value="9:16" selected>9:16 (Portrait)</option>
+                                </select>
+                            </div>
+                            <button id="generate-all-videos-btn" class="w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.832l3-2a1 1 0 000-1.664l-3-2z" /></svg>
+                                <span>Generate semua video</span>
+                            </button>
+                            <div class="flex gap-2">
+                                <button id="download-all-videos-btn" class="w-full btn-secondary font-bold py-3 px-2 rounded-lg flex items-center justify-center text-sm" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                    <span>Unduh</span>
+                                </button>
+                                <button id="clear-all-videos-btn" class="w-full btn-secondary font-bold py-3 px-2 rounded-lg flex items-center justify-center text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                    <span>Bersihkan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <main id="video-slots-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Video slots will be dynamically injected here by index.tsx -->
+                    </main>
+                </div>
+
+                <!-- NEW: Analisa Gambar Panel -->
+                <div id="analyze-screenshot-panel" role="tabpanel" aria-labelledby="tab-analyze-screenshot" class="hidden">
+                    <p class="text-center text-light-muted-color mb-8 max-w-3xl mx-auto">Analisis visual instan. Unggah gambar apa pun untuk menghasilkan script voice over yang menarik.</p>
+                    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                        <!-- Input Section -->
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-white">1. Unggah Gambar</h2>
+                                <div class="flex items-center gap-3">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="analyze-ai-model-toggle" class="sr-only peer">
+                                        <div class="toggle-switch"></div>
+                                    </label>
+                                    <span id="analyze-ai-model-label" class="w-20 text-left text-sm font-semibold text-white">Mode Flash</span>
+                                </div>
+                            </div>
+                            <div class="mb-6 flex flex-col items-center">
+                                <div id="analyze-screenshot-upload-area" class="w-full h-[300px] max-w-lg flex items-center justify-center border-2 border-dashed border-border-color rounded-lg cursor-pointer hover:border-primary-color transition-colors duration-200">
+                                    <label for="analyze-screenshot-input" class="file-input-label !border-none !p-4 flex flex-col items-center justify-center w-full h-full text-center text-light-muted-color">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        <span>Pilih Gambar</span>
+                                    </label>
+                                    <input type="file" id="analyze-screenshot-input" class="hidden" accept="image/png, image/jpeg, image/webp">
+                                </div>
+                                <div id="analyze-screenshot-preview-container" class="hidden mt-4 relative w-full h-[300px] max-w-lg flex items-center justify-center">
+                                    <img id="analyze-screenshot-preview" src="#" alt="Pratinjau Gambar" class="max-h-full max-w-full object-contain rounded-lg">
+                                    <button id="analyze-screenshot-remove-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+                                </div>
+                            </div>
+                            
+                            <h2 class="text-xl font-semibold mt-6 mb-3 text-white">2. Atur Durasi Voice Over (Detik)</h2>
+                            <div class="flex gap-4 mb-4">
+                                <select id="analyze-screenshot-duration-select" class="w-1/2 p-3 input-field rounded-lg">
+                                    <option value="20" selected>20 Detik (Default)</option>
+                                    <option value="25">25 Detik</option>
+                                    <option value="30">30 Detik</option>
+                                </select>
+                                <input type="number" id="analyze-screenshot-manual-duration-input" class="w-1/2 p-3 input-field rounded-lg" placeholder="Atau masukkan manual">
+                            </div>
+
+                            <h2 class="text-xl font-semibold mt-6 mb-3 text-white">3. Pilih Bahasa Output</h2>
+                            <div class="mb-4">
+                                <select id="analyze-screenshot-language-select" class="w-full p-3 input-field rounded-lg">
+                                    <option value="indonesian" selected>Indonesia</option>
+                                    <option value="malay">Melayu</option>
+                                    <option value="thai">Thailand</option>
+                                    <option value="vietnamese">Vietnam</option>
+                                    <option value="hindi">India</option>
+                                    <option value="english">English</option>
+                                </select>
+                            </div>
+
+                            <h2 class="text-xl font-semibold mt-6 mb-3 text-white">4. Tema Suara <span class="text-sm text-light-muted-color">(Opsional)</span></h2>
+                            <div class="mb-4">
+                                <textarea id="analyze-screenshot-voice-theme-input" rows="3" class="w-full p-3 input-field rounded-lg" placeholder="Contoh: Lucu dan ceria untuk anak-anak, formal dan informatif untuk berita..."></textarea>
+                            </div>
+
+                            <button id="generate-script-btn" class="mt-8 w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg" disabled>
+                                ✨ Hasilkan Script
+                            </button>
+                        </div>
+
+                        <!-- Output Section -->
+                        <div class="card p-6 flex flex-col gap-6">
+                            <div>
+                                <h2 class="text-xl font-semibold mb-3 text-white">Hasil Script Voice Over</h2>
+                                <div id="analyze-screenshot-script-output" class="result-card min-h-[150px] bg-modal-text-bg p-4 rounded-lg text-sm text-light-muted-color whitespace-pre-wrap flex items-center justify-center text-center">
+                                    <span class="text-light-muted-color">Script Anda akan muncul di sini</span>
+                                </div>
+                                <button id="copy-screenshot-script-btn" class="mt-4 w-full btn-secondary font-bold py-2 px-4 rounded-lg" disabled>Salin Script</button>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold mb-3 text-white">Hasil Caption Media Sosial</h2>
+                                <div id="analyze-screenshot-caption-output" class="result-card min-h-[100px] bg-modal-text-bg p-4 rounded-lg text-sm text-light-muted-color whitespace-pre-wrap flex items-center justify-center text-center">
+                                    <span class="text-light-muted-color">Caption Anda akan muncul di sini</span>
+                                </div>
+                                <button id="copy-screenshot-caption-btn" class="mt-4 w-full btn-secondary font-bold py-2 px-4 rounded-lg" disabled>Salin Caption</button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+
+                <!-- NEW: Voice Over Panel -->
+                <div id="voiceover-manual-panel" role="tabpanel" aria-labelledby="tab-voiceover-manual" class="hidden">
+                    <p class="text-center text-light-muted-color mb-8 max-w-3xl mx-auto">Teks ke suara profesional. Ubah naskah Anda menjadi audio berkualitas tinggi dengan beragam pilihan suara AI.</p>
+                    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                        <!-- Input Section -->
+                        <div class="card p-6">
+                            <h2 class="text-xl font-semibold mb-3 text-white">1. Masukkan Teks</h2>
+                            <div class="relative">
+                                <textarea id="manual-voiceover-input" rows="8" class="w-full p-3 pr-10 input-field rounded-lg" placeholder="Contoh: Ini adalah produk hebat yang bisa mengubah hidup Anda..."></textarea>
+                                <button id="clear-manual-voiceover-input-btn" class="absolute top-2 right-2 btn-close-styled w-7 h-7 hidden z-10" title="Hapus input">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                </button>
+                            </div>
+
+                            <h2 class="text-xl font-semibold mt-6 mb-3 text-white">2. Pilih Model Suara AI</h2>
+                            <div class="mb-4">
+                                <select id="manual-voiceover-model-select" class="w-full p-3 input-field rounded-lg">
+                                    <optgroup label="Suara Wanita">
+                                        <option value="achernar">Achernar - Terang, Jelas</option>
+                                        <option value="aoede">Aoede - Lembut, Melodis</option>
+                                        <option value="autonoe">Autonoe - Santai, Alami</option>
+                                        <option value="callirrhoe">Callirrhoe - Bersemangat, Muda</option>
+                                        <option value="despina" selected>Despina - Ceria, Ringan</option>
+                                        <option value="erinome">Erinome - Dalam, Penuh Perasaan</option>
+                                        <option value="gacrux">Gacrux - Hangat, Ramah</option>
+                                        <option value="kore">Kore - Jelas, Tenang</option>
+                                        <option value="laomedeia">Laomedeia - Ceria, Optimis</option>
+                                        <option value="leda">Leda - Halus, Menenangkan</option>
+                                        <option value="pulcherrima">Pulcherrima - Elegan, Halus</option>
+                                        <option value="sulafat">Sulafat - Ramah, Bersahabat</option>
+                                        <option value="vindemiatrix">Vindemiatrix - Enerjik, Tegas</option>
+                                        <option value="zephyr">Zephyr - Ringan, Ceria</option>
+                                    </optgroup>
+                                    <optgroup label="Suara Pria">
+                                        <option value="achird">Achird - Ramah, Hangat</option>
+                                        <option value="algenib">Algenib - Profesional, Jelas</option>
+                                        <option value="algieba">Algieba - Dewasa, Tenang</option>
+                                        <option value="alnilam">Alnilam - Dalam, Resonan</option>
+                                        <option value="charon">Charon - Dalam, Berat</option>
+                                        <option value="enceladus">Enceladus - Profesional, Meyakinkan</option>
+                                        <option value="fenrir">Fenrir - Kuat, Tegas</option>
+                                        <option value="iapetus">Iapetus - Tua, Bijaksana</option>
+                                        <option value="orus">Orus - Berwibawa, Kuat</option>
+                                        <option value="puck">Puck - Muda, Enerjik</option>
+                                        <option value="rasalgethi">Rasalgethi - Dalam, Serius</option>
+                                        <option value="sadachbia">Sadachbia - Santai, Alami</option>
+                                        <option value="sadaltager">Sadaltager - Jelas, Informatif</option>
+                                        <option value="schedar">Schedar - Jelas, Berwibawa</option>
+                                        <option value="umbriel">Umbriel - Serius, Formal</option>
+                                        <option value="zubenelgenubi">Zubenelgenubi - Unik, Khas</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <p class="text-sm text-light-muted-color mb-6">Model suara aktif: <span id="selected-voice-display" class="font-semibold text-white"></span></p>
+                            
+                            <h2 class="text-xl font-semibold mt-6 mb-3 text-white">3. Pilih Gaya Bicara</h2>
+                            <div class="mb-4">
+                                <select id="manual-voiceover-style-select" class="w-full p-3 input-field rounded-lg text-base">
+                                     <option value="natural" selected>🗣️ Natural</option>
+                                     <option value="sat_set">⚡️ Sat Set (Cepat)</option>
+                                     <option value="shouting_promo">📢 Teriak Jualan (Lantang, Cepat & Sat Set)</option>
+                                     <option value="energetic">⚡️ Energetik</option>
+                                     <option value="cheerful">😄 Ceria</option>
+                                     <option value="calm">😌 Tenang</option>
+                                     <option value="authoritative">👑 Berwibawa</option>
+                                     <option value="friendly">👋 Ramah</option>
+                                     <option value="promotional">📢 Promosi</option>
+                                     <option value="formal">👔 Formal</option>
+                                     <option value="whispering">🤫 Bisikan</option>
+                                     <option value="sad">😢 Sedih</option>
+                                </select>
+                                <p id="manual-voiceover-style-desc" class="text-xs text-light-muted-color mt-1.5 min-h-[1.25rem]"></p>
+                            </div>
+
+
+                            <button id="generate-manual-voiceover-btn" class="mt-8 w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg" disabled>
+                                🎙️ Hasilkan Audio
+                            </button>
+                        </div>
+
+                        <!-- Output Section -->
+                        <div class="card p-6 flex flex-col gap-6">
+                            <div>
+                                <h2 class="text-xl font-semibold mb-3 text-white">Hasil Audio Voice Over</h2>
+                                <div id="manual-voiceover-audio-output" class="result-card min-h-[150px] bg-modal-text-bg p-4 rounded-lg text-sm text-light-muted-color whitespace-pre-wrap flex items-center justify-center text-center">
+                                    <span class="text-light-muted-color">Audio Anda akan muncul di sini</span>
+                                </div>
+                                <!-- Custom Audio Player Controls -->
+                                <div id="manual-voiceover-player-container" class="flex flex-col items-center gap-4 w-full mt-4 hidden">
+                                    <div class="flex items-center gap-3 w-full max-w-sm">
+                                        <button id="play-pause-btn" class="btn-primary p-2 rounded-full disabled:opacity-50" disabled>
+                                            <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7l6 3.5L8 14V7z" clip-rule="evenodd" /></svg>
+                                            <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 8h2v4H7V8zm4 0h2v4h-2V8z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                        <div class="flex-grow flex items-center gap-2">
+                                            <span id="current-time" class="text-sm text-light-muted-color">0:00</span>
+                                            <input type="range" id="progress-bar" value="0" min="0" max="0" class="flex-grow h-1 bg-border-color rounded-lg appearance-none cursor-pointer">
+                                            <span id="total-duration" class="text-sm text-light-muted-color">0:00</span>
+                                        </div>
+                                    </div>
+                                    <a id="download-audio-btn" href="#" download="voiceover.wav" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center justify-center disabled-link">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                        Unduh Audio
+                                    </a>
+                                </div>
+                                
+                                <!-- History Section -->
+                                <div id="voiceover-history-section" class="mt-8 hidden">
+                                    <h3 class="text-lg font-semibold text-white mb-3">Histori Suara Anda</h3>
+                                    <div id="voiceover-history-list" class="flex flex-col gap-3">
+                                        <!-- History items will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+            
+            <footer class="text-center mt-12 py-6 footer">
+                <p class="text-sm text-muted-color">&copy; 2024 Fashionity. Seluruh hak cipta dilindungi.</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Universal Modal (for captions, etc.) -->
+    <div id="universal-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-xl font-bold text-white"></h3>
+                <button id="close-modal-btn" class="btn-close-styled w-7 h-7">
+                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="white"></circle><path d="M8 8L16 16M16 8L8 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+            </div>
+            <div id="modal-body">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
